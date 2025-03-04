@@ -63,7 +63,6 @@ new class extends Component {
             }
         } catch (\Exception $e) {
             report($e);
-            dd($e);
             session()->flash('error', __('Quelque chose s\'est mal passé'));
         }
     }
