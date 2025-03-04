@@ -57,11 +57,11 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->plugins([
-                FilamentDeveloperLoginsPlugin::make()
-                    ->enabled()
-                    ->users([
-                        'Admin' => 'admin@admin.dev',
-                    ]),
+                // FilamentDeveloperLoginsPlugin::make()
+                //     ->enabled()
+                //     ->users([
+                //         'Admin' => 'admin@admin.dev',
+                //     ]),
                 FilamentTranslatableFieldsPlugin::make()->supportedLocales([
                     'fr' => 'Français',
                     'en' => 'English',
