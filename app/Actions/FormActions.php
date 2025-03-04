@@ -11,28 +11,30 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
-
 class FormActions
 {
     /**
-     * Initialize form data structure based on the property's visitor form
+     * Initialize form data structure based on the property's sections
      */
     public function initFormData(Property $property): array
     {
-        if (!$property->visitorForm) {
+
+        $sections = $property ? $property->sections : ($property->sections ?? []);
+
+        if (empty($sections)) {
             return [];
         }
 
         $formData = [];
 
         // Create the structured formData with sections and fields
-        foreach ($property->visitorForm->sections as $section) {
+        foreach ($sections as $sectionIndex => $section) {
             $sectionData = [
                 'title' => $section['title'],
                 'fields' => []
             ];
 
-            foreach ($section['fields'] as $field) {
+            foreach ($section['fields'] as $fieldIndex => $field) {
                 $fieldType = FormField::tryFrom($field['type']);
                 if ($fieldType) {
                     $sectionData['fields'][] = $fieldType->initializeField($field);
@@ -48,15 +50,18 @@ class FormActions
     /**
      * Get validation rules for the form
      */
-    public function getValidationRules(Property $property, int $currentStep = null): array
+    public function getValidationRules(Property $property): array
     {
         $rules = [];
 
-        if (!$property->visitorForm) {
+        // Use  or sections based on what's available
+        $sections = $property ? $property->sections : ($property->sections ?? []);
+
+        if (empty($sections)) {
             return $rules;
         }
 
-        foreach ($property->visitorForm->sections as $sectionIndex => $section) {
+        foreach ($sections as $sectionIndex => $section) {
             foreach ($section['fields'] as $fieldIndex => $field) {
                 $fieldKey = "formData.{$sectionIndex}.fields.{$fieldIndex}.answer";
 
@@ -108,7 +113,7 @@ class FormActions
     public function processFormDataForSubmission(array $formData): array
     {
         if (empty($formData)) {
-            return $formData;
+            return ['processedData' => [], 'filesToProcess' => []];
         }
 
         $processedFormData = $formData;
@@ -122,7 +127,7 @@ class FormActions
 
             foreach ($section['fields'] as $fieldIndex => $field) {
                 // Process file uploads
-                if (isset($field['type']) && $field['type'] === FormField::UPLOAD->value && isset($field['answer'])) {
+                if (isset($field['type']) && $field['type'] === FormField::UPLOAD->value && !empty($field['answer'])) {
                     if ($field['answer'] instanceof TemporaryUploadedFile) {
                         // Generate unique identifier for the file
                         $fileId = (string) Str::uuid();
@@ -173,7 +178,7 @@ class FormActions
                 'visitor_id' => $visitorId,
                 'property_id' => $property->id,
                 'answers' => $processedData,
-                'status' => 'approved',
+                'status' => 'pending',
             ]);
             Log::info("Submission created: {$submission->id}");
 

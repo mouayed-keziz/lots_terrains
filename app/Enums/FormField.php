@@ -152,10 +152,12 @@ enum FormField: string implements HasLabel
         }
 
         if (in_array($this, [self::SELECT, self::RADIO]) && !empty($answer)) {
+            // For select/radio, find and return the complete translation array
             return $this->findOptionTranslations($fieldData['options'] ?? [], $answer);
         }
 
         if ($this === self::CHECKBOX && is_array($answer)) {
+            // For checkbox, create an array of complete translation arrays
             $translatedAnswers = [];
             foreach ($answer as $selectedValue) {
                 $translatedAnswers[] = $this->findOptionTranslations($fieldData['options'] ?? [], $selectedValue);
@@ -172,15 +174,32 @@ enum FormField: string implements HasLabel
     private function findOptionTranslations(array $options, $answerValue): array
     {
         $currentLocale = app()->getLocale();
+        $supportedLocales = ['fr', 'en', 'ar']; // All supported locales
 
-        // Find the option with matching value in current locale
+        // First try to find the option with matching value in current locale
         foreach ($options as $option) {
             if (isset($option['option'][$currentLocale]) && $option['option'][$currentLocale] === $answerValue) {
-                return $option['option'];
+                return $option['option']; // Return the full translation object
             }
         }
 
-        // Fallback: Return the answer value keyed by current locale
-        return [$currentLocale => $answerValue];
+        // If not found by current locale, try other locales
+        foreach ($supportedLocales as $locale) {
+            if ($locale === $currentLocale) continue; // Skip current locale (already checked)
+
+            foreach ($options as $option) {
+                if (isset($option['option'][$locale]) && $option['option'][$locale] === $answerValue) {
+                    return $option['option']; // Return the full translation object
+                }
+            }
+        }
+
+        // Fallback: Create a new translation object with the answer value
+        $translationObject = [];
+        foreach ($supportedLocales as $locale) {
+            $translationObject[$locale] = $answerValue;
+        }
+
+        return $translationObject;
     }
 }

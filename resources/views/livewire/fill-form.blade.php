@@ -36,20 +36,27 @@ new class extends Component {
     {
         $actions = new FormActions();
 
-        // Validate using the rules
-        $this->validate($this->rules());
+        try {
+            // Validate using the rules
+            $this->validate($this->rules());
 
-        // DEBUG - Show the form data with answers
-        dd($this->formData, 'Form data ready for submission');
+            // Process the form data to handle translations for checkbox, select, and radio
+            $processedFormData = $actions->processFormData($this->formData);
 
-        // Save the form submission
-        $success = $actions->saveFormSubmission($this->property, $this->formData);
+            // DEBUG - Show the processed form data with translated answers
+            dd($processedFormData, 'Form data ready for submission');
 
-        if ($success) {
-            $this->formSubmitted = true;
-            $this->successMessage = __('Form submitted successfully!');
-        } else {
-            session()->flash('error', 'An error occurred while submitting the form. Please try again.');
+            // Save the form submission
+            $success = $actions->saveFormSubmission($this->property, $this->formData);
+
+            if ($success) {
+                $this->formSubmitted = true;
+                $this->successMessage = __('Form submitted successfully!');
+            } else {
+                session()->flash('error', __('An error occurred while submitting the form. Please try again.'));
+            }
+        } catch (\Exception $e) {
+            session()->flash('error', __('Validation failed. Please check the form and try again.'));
         }
     }
 }; ?>
@@ -94,8 +101,8 @@ new class extends Component {
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
                     <form wire:submit.prevent="submitForm">
-                        @if ($this->property->sections)
-                            @foreach ($this->property->sections as $sectionIndex => $section)
+                        @if (!empty($formData))
+                            @foreach ($formData as $sectionIndex => $section)
                                 @include('website.components.forms.input.section_title', [
                                     'title' => $section['title'][app()->getLocale()] ?? $section['title']['fr'],
                                 ])
@@ -143,7 +150,7 @@ new class extends Component {
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm text-yellow-700">
-                                            {{ __('No form available for this event.') }}
+                                            {{ __('No form available for this property.') }}
                                         </p>
                                     </div>
                                 </div>
