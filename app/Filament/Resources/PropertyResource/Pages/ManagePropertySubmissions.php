@@ -55,7 +55,11 @@ class ManagePropertySubmissions extends ManageRelatedRecords
                 // Tables\Actions\AssociateAction::make(),
             ])
             ->actions([
-                Tables\Actions\ViewAction::make(),
+                Tables\Actions\ViewAction::make()
+                    ->url(fn($record) => PropertyResource::getUrl('submissions.view', [
+                        'record' => $record->property->id,
+                        'submission' => $record->id,
+                    ])),
                 // Tables\Actions\EditAction::make(),
                 // Tables\Actions\DissociateAction::make(),
                 Tables\Actions\DeleteAction::make(),

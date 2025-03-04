@@ -205,7 +205,9 @@ class PropertyResource extends Resource
             'create' => Pages\CreateProperty::route('/create'),
             'view' => Pages\ViewProperty::route('/{record}'),
             'edit' => Pages\EditProperty::route('/{record}/edit'),
+
             'submissions' => Pages\ManagePropertySubmissions::route('/{record}/submissions'),
+            'submissions.view' => Pages\ViewSubmission::route('/{record}/submission/{submission}'),
         ];
     }
 
