@@ -12,7 +12,7 @@ use Illuminate\Support\Str;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 
-class FormActions extends BaseFormActions
+class FormActions
 {
     /**
      * Initialize form data structure based on the property's visitor form
@@ -34,55 +34,15 @@ class FormActions extends BaseFormActions
 
             foreach ($section['fields'] as $field) {
                 $fieldType = FormField::tryFrom($field['type']);
-                $sectionData['fields'][] = $fieldType
-                    ? $fieldType->initializeField($field)
-                    : $this->initializeField($field);
+                if ($fieldType) {
+                    $sectionData['fields'][] = $fieldType->initializeField($field);
+                }
             }
 
             $formData[] = $sectionData;
         }
 
         return $formData;
-    }
-
-    /**
-     * Initialize a single field structure (fallback method)
-     */
-    protected function initializeField(array $field): array
-    {
-        $fieldData = [
-            'type' => $field['type'],
-            'data' => [
-                'label' => $field['data']['label'],
-                'description' => $field['data']['description'] ?? null,
-            ],
-            'answer' => null
-        ];
-
-        // Copy any additional field-specific data
-        if (isset($field['data']['type'])) {
-            $fieldData['data']['type'] = $field['data']['type'];
-        }
-        if (isset($field['data']['required'])) {
-            $fieldData['data']['required'] = $field['data']['required'];
-        }
-        if (isset($field['data']['options'])) {
-            $fieldData['data']['options'] = $field['data']['options'];
-        }
-        if (isset($field['data']['file_type'])) {
-            $fieldData['data']['file_type'] = $field['data']['file_type'];
-        }
-
-        // Initialize answer based on field type
-        if ($field['type'] === FormField::CHECKBOX->value) {
-            $fieldData['answer'] = [];
-        } elseif ($field['type'] === FormField::UPLOAD->value) {
-            $fieldData['answer'] = null;
-        } else {
-            $fieldData['answer'] = '';
-        }
-
-        return $fieldData;
     }
 
     /**
@@ -103,37 +63,11 @@ class FormActions extends BaseFormActions
                 $fieldType = FormField::tryFrom($field['type']);
                 if ($fieldType) {
                     $rules[$fieldKey] = implode('|', $fieldType->getValidationRules($field));
-                } else {
-                    $rules[$fieldKey] = $this->getFieldValidationRules($field);
                 }
             }
         }
 
         return $rules;
-    }
-
-    /**
-     * Get validation rules for a specific field
-     */
-    protected function getFieldValidationRules(array $field): string
-    {
-        $fieldType = FormField::tryFrom($field['type']);
-
-        if ($fieldType) {
-            return implode('|', $fieldType->getValidationRules($field));
-        }
-
-        // Fallback if field type is not recognized
-        $fieldRules = [];
-
-        // Check if field is required
-        if (Arr::get($field, 'data.required', false)) {
-            $fieldRules[] = 'required';
-        } else {
-            $fieldRules[] = 'nullable';
-        }
-
-        return implode('|', $fieldRules);
     }
 
     /**

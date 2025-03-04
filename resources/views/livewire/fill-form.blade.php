@@ -1,7 +1,7 @@
 <?php
 use Livewire\Volt\Component;
 use App\Models\Property;
-use App\Actions\VisitEventFormActions;
+use App\Actions\FormActions;
 use Livewire\WithFileUploads;
 
 new class extends Component {
@@ -13,6 +13,13 @@ new class extends Component {
     public bool $formSubmitted = false;
     public string $successMessage = '';
 
+    // Define validation rules as a property
+    protected function rules()
+    {
+        $actions = new FormActions();
+        return $actions->getValidationRules($this->property);
+    }
+
     public function mount(Property $property)
     {
         $this->property = $property;
@@ -21,17 +28,19 @@ new class extends Component {
 
     protected function initFormData()
     {
-        $actions = new VisitEventFormActions();
+        $actions = new FormActions();
         $this->formData = $actions->initFormData($this->property);
     }
 
     public function submitForm()
     {
-        $actions = new VisitEventFormActions();
+        $actions = new FormActions();
 
-        // Validate the form data
-        $rules = $actions->getValidationRules($this->property);
-        $this->validate($rules);
+        // Validate using the rules
+        $this->validate($this->rules());
+
+        // DEBUG - Show the form data with answers
+        dd($this->formData, 'Form data ready for submission');
 
         // Save the form submission
         $success = $actions->saveFormSubmission($this->property, $this->formData);
@@ -47,61 +56,102 @@ new class extends Component {
 
 <div class="container mx-auto py-8 px-4">
     @if (session('error'))
-        <div class="alert alert-error mb-4">
-            {{ session('error') }}
+        <div class="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-red-700">{{ session('error') }}</p>
+                </div>
+            </div>
         </div>
     @endif
 
     @if ($formSubmitted)
-        <div class="rounded-btn alert alert-success mb-4 shadow-md text-white">
-            <x-heroicon-o-check-circle class="w-6 h-6 inline-block mr-2" />
-            {{ $successMessage }}
+        <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4 shadow-md">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                        fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-green-700">{{ $successMessage }}</p>
+                </div>
+            </div>
         </div>
     @else
-        {{-- <div class="mb-6">
-            <h2 class="text-2xl font-bold mb-2">{{ __('Visitor Registration') }}</h2>
-            <p class="text-gray-600">{{ __('Please fill out the form below to register for this event.') }}</p>
-        </div> --}}
+        <div class="max-w-7xl mx-auto">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-6">
+                    <form wire:submit.prevent="submitForm">
+                        @if ($this->property->sections)
+                            @foreach ($this->property->sections as $sectionIndex => $section)
+                                @include('website.components.forms.input.section_title', [
+                                    'title' => $section['title'][app()->getLocale()] ?? $section['title']['fr'],
+                                ])
 
-        <form wire:submit.prevent="submitForm">
-            @if ($this->property->sections)
-                @foreach ($this->property->sections as $sectionIndex => $section)
-                    @include('website.components.forms.input.section_title', [
-                        'title' => $section['title'][app()->getLocale()] ?? $section['title']['fr'],
-                    ])
+                                @foreach ($section['fields'] as $fieldIndex => $field)
+                                    @php
+                                        $answerPath = "{$sectionIndex}.fields.{$fieldIndex}.answer";
+                                    @endphp
 
-                    @foreach ($section['fields'] as $fieldIndex => $field)
-                        @php
-                            $answerPath = "{$sectionIndex}.fields.{$fieldIndex}.answer";
-                        @endphp
+                                    @include('website.components.forms.fields', [
+                                        'fields' => [$field],
+                                        'answerPath' => $answerPath,
+                                    ])
 
-                        @include('website.components.forms.fields', [
-                            'fields' => [$field],
-                            'answerPath' => $answerPath,
-                        ])
+                                    @error("formData.{$sectionIndex}.fields.{$fieldIndex}.answer")
+                                        <div class="text-red-600 text-sm mt-1">{{ $message }}</div>
+                                    @enderror
+                                @endforeach
 
-                        @error("formData.{$sectionIndex}.fields.{$fieldIndex}.answer")
-                            <div class="text-error text-sm mt-1">{{ $message }}</div>
-                        @enderror
-                    @endforeach
+                                <div class="h-8"></div>
+                            @endforeach
 
-                    <div class="h-8"></div>
-                @endforeach
-
-                <div class="flex justify-end mt-6">
-                    <button type="submit" class="btn btn-primary" wire:loading.attr="disabled">
-                        <span wire:loading.remove>{{ __('Submit') }}</span>
-                        <span wire:loading wire:target="submitForm">
-                            <x-heroicon-o-arrow-path class="w-5 h-5 animate-spin mr-2" />
-                            {{ __('Submitting...') }}
-                        </span>
-                    </button>
+                            <div class="flex justify-end mt-6">
+                                <button type="submit"
+                                    class="inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed
+                                     px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                                    wire:loading.attr="disabled">
+                                    <span wire:loading.remove wire:target="submitForm">{{ __('Submit') }}</span>
+                                    <span wire:loading wire:target="submitForm"
+                                        class="flex flex-row justify-center items-center gap-2">
+                                        {{ __('Submitting...') }}
+                                    </span>
+                                </button>
+                            </div>
+                        @else
+                            <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                                <div class="flex">
+                                    <div class="flex-shrink-0">
+                                        <svg class="h-5 w-5 text-yellow-400" xmlns="http://www.w3.org/2000/svg"
+                                            viewBox="0 0 20 20" fill="currentColor">
+                                            <path fill-rule="evenodd"
+                                                d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                                clip-rule="evenodd" />
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm text-yellow-700">
+                                            {{ __('No form available for this event.') }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </form>
                 </div>
-            @else
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <p class="text-center text-gray-500">{{ __('No form available for this event.') }}</p>
-                </div>
-            @endif
-        </form>
+            </div>
+        </div>
     @endif
 </div>

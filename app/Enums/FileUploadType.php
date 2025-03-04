@@ -6,26 +6,28 @@ use Filament\Support\Contracts\HasLabel;
 
 enum FileUploadType: string implements HasLabel
 {
-    case IMAGE = "image";
-    case PDF = "pdf";
-    case ANY = "quelconque";
+    case ANY = 'any';
+    case PDF = 'pdf';
+    case IMAGE = 'image';
+    case DOCUMENT = 'document';
 
     public function getLabel(): ?string
     {
-        return $this->value;
+        return match ($this) {
+            self::ANY => 'Any File',
+            self::PDF => 'PDF Document',
+            self::IMAGE => 'Image File',
+            self::DOCUMENT => 'Word/Excel Document',
+        };
     }
 
-    /**
-     * Get validation rules for this file type
-     */
     public function getValidationRules(): array
     {
-        $rules = ['file'];
-
         return match ($this) {
-            self::IMAGE => array_merge($rules, ['mimes:jpg,jpeg,png,gif,bmp,webp', 'max:10240']), // 10MB max for images
-            self::PDF => array_merge($rules, ['mimes:pdf', 'max:20480']), // 20MB max for PDFs
-            self::ANY => array_merge($rules, ['max:25600']), // 25MB general limit
+            self::ANY => ['file'],
+            self::PDF => ['file', 'mimes:pdf', 'max:10240'],
+            self::IMAGE => ['image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
+            self::DOCUMENT => ['file', 'mimes:doc,docx,xls,xlsx,ppt,pptx', 'max:10240'],
         };
     }
 }
