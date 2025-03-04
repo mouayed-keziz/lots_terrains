@@ -6,7 +6,7 @@
 
     </div>
     <div class="flex items-center gap-2">
-        <a href="{{ $fileUrl }}" class="text-primary-600 hover:text-primary-500 inline-flex items-center gap-1"
+        <a href="{{ $fileUrl }}" class="text-primary-500 hover:text-primary-400 inline-flex items-center gap-1"
             download>
             <x-heroicon-o-arrow-down-tray class="w-5 h-5" />
             Télécharger
