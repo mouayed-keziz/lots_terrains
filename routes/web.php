@@ -19,11 +19,15 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 Route::get("test", function (Request $request) {
-    $user = User::factory()->create([
-        'name' => 'admin',
-        'email' => 'admin@admin.dev',
-        'password' => bcrypt('admin'),
-    ]);
+    try {
+        $user = User::create([
+            'name' => 'admin',
+            'email' => 'admin@admin.dev',
+            'password' => bcrypt('admin'),
+        ]);
+    } catch (\Throwable $th) {
+        return response()->json($th);
+    }
     return response()->json($user);
 });
 
