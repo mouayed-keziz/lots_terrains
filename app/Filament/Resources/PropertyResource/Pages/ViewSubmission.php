@@ -113,6 +113,6 @@ class ViewSubmission extends ViewRecord
      */
     public function getTitle(): string
     {
-        return __('panel/visitor_submissions.single');
+        return $this->getRecord()->property->name . ' - ' . $this->getRecord()->user->name;
     }
 }

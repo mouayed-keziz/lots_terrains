@@ -18,7 +18,7 @@ Route::view('profile', 'profile')
     ->middleware(['auth'])
     ->name('profile');
 
-Route::get("test", function (Request $request) {
+Route::get("test", function () {
     try {
         $user = User::create([
             'name' => 'admin',
