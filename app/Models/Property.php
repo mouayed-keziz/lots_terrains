@@ -39,6 +39,6 @@ class Property extends Model implements HasMedia
      */
     public function getImageAttribute(): string
     {
-        return $this->hasMedia("image") ? $this->getFirstMediaUrl("image") : "https://via.placeholder.com/640x480?text=No+Image";
+        return $this->hasMedia("image") ? $this->getFirstMediaUrl("image") : "https://placehold.co/400";
     }
 }
