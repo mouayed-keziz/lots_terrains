@@ -17,7 +17,7 @@
         @break
 
         @case(App\Enums\FormInputType::NUMBER->value)
-            @include('website.components.forms.input.text-input', [
+            @include('website.components.forms.input.number-input', [
                 'data' => $data,
                 'answerPath' => $answerPath,
             ])
