@@ -28,6 +28,7 @@ class InputBlock
                         ->columnSpan(8)
                         ->label("Type")
                         ->native(false)
+                        ->required()
                         ->options(FormInputType::class),
 
                     Toggle::make('required')
