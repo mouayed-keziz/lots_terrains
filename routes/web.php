@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\PropertyController;
 use App\Models\Property;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,14 +19,12 @@ Route::view('profile', 'profile')
     ->name('profile');
 
 Route::get("test", function (Request $request) {
-    $newProperty = Property::create([
-        'title'       => 'Sample Title',
-        'description' => 'Sample Description',
-        'content'     => 'Sample Content',
-        'sections'    => "",
+    $user = User::factory()->create([
+        'name' => 'admin',
+        'email' => 'admin@admin.dev',
+        'password' => bcrypt('admin'),
     ]);
-
-    return response()->json($newProperty);
+    return response()->json($user);
 });
 
 require __DIR__ . '/auth.php';

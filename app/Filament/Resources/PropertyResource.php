@@ -20,9 +20,20 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use App\Filament\Resources\PropertyResource\Components;
+use App\Filament\Resources\PropertyResource\RelationManagers\SubmissionsRelationManager;
+use Guava\FilamentNestedResources\Ancestor;
+use Guava\FilamentNestedResources\Concerns\NestedResource;
 
 class PropertyResource extends Resource
 {
+    use NestedResource;
+
+    public static function getAncestor(): ?Ancestor
+    {
+        return null;
+    }
+
+
     protected static ?string $model = Property::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-home';
@@ -167,6 +178,11 @@ class PropertyResource extends Resource
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make("submissions")
+                    ->label("Gérer les soumissions")
+                    ->url(function ($record) {
+                        return "/admin/properties/{$record->id}/submissions";
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -179,9 +195,7 @@ class PropertyResource extends Resource
 
     public static function getRelations(): array
     {
-        return [
-            //
-        ];
+        return [];
     }
 
     public static function getPages(): array
@@ -191,6 +205,7 @@ class PropertyResource extends Resource
             'create' => Pages\CreateProperty::route('/create'),
             'view' => Pages\ViewProperty::route('/{record}'),
             'edit' => Pages\EditProperty::route('/{record}/edit'),
+            'submissions' => Pages\ManagePropertySubmissions::route('/{record}/submissions'),
         ];
     }
 

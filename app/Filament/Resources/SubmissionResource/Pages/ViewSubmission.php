@@ -1,17 +1,16 @@
 <?php
 
-namespace App\Filament\Resources\PropertyResource\Pages;
+namespace App\Filament\Resources\SubmissionResource\Pages;
 
-use App\Filament\Resources\PropertyResource;
+use App\Filament\Resources\SubmissionResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ViewRecord;
 use Guava\FilamentNestedResources\Concerns\NestedPage;
 
-class ViewProperty extends ViewRecord
+class ViewSubmission extends ViewRecord
 {
     use NestedPage;
-
-    protected static string $resource = PropertyResource::class;
+    protected static string $resource = SubmissionResource::class;
 
     protected function getHeaderActions(): array
     {
