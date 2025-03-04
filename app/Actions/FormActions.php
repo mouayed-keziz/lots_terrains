@@ -168,19 +168,17 @@ class FormActions
             $filesToProcess = $processResult['filesToProcess'];
 
             // Get visitor ID if user is authenticated as a visitor
-            $visitorId = null;
-            if (auth('visitor')->check()) {
-                $visitorId = auth('visitor')->user()->id;
+            $userId = null;
+            if (auth('web')->check()) {
+                $userId = auth('web')->user()->id;
             }
 
             // Create a new submission with nullable visitor_id
             $submission = \App\Models\Submission::create([
-                'visitor_id' => $visitorId,
+                'user_id' => $userId,
                 'property_id' => $property->id,
                 'answers' => $processedData,
-                'status' => 'pending',
             ]);
-            Log::info("Submission created: {$submission->id}");
 
             // Process any files by adding them to the Spatie Media Library
             foreach ($filesToProcess as $fileInfo) {
@@ -192,7 +190,6 @@ class FormActions
                         'fieldLabel' => $fileInfo['fieldData']['label'] ?? null,
                     ])
                     ->toMediaCollection('attachments');
-                Log::info("Media added: {$media->id} with fileId: {$fileInfo['fileId']}");
             }
 
             return true;

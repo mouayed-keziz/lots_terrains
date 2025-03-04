@@ -23,7 +23,18 @@ new class extends Component {
     public function mount(Property $property)
     {
         $this->property = $property;
-        $this->initFormData();
+
+        $submission = $property
+            ->submissions()
+            ->where('user_id', auth()->id())
+            ->first();
+
+        if ($submission) {
+            $this->formSubmitted = true;
+            $this->successMessage = __('Vous avez déjà soumis ce formulaire.');
+        } else {
+            $this->initFormData();
+        }
     }
 
     protected function initFormData()
@@ -40,23 +51,19 @@ new class extends Component {
             // Validate using the rules
             $this->validate($this->rules());
 
-            // Process the form data to handle translations for checkbox, select, and radio
-            $processedFormData = $actions->processFormData($this->formData);
+            $processResult = $actions->processFormDataForSubmission($this->formData);
 
-            // DEBUG - Show the processed form data with translated answers
-            dd($processedFormData, 'Form data ready for submission');
-
-            // Save the form submission
             $success = $actions->saveFormSubmission($this->property, $this->formData);
 
             if ($success) {
                 $this->formSubmitted = true;
-                $this->successMessage = __('Form submitted successfully!');
+                $this->successMessage = __('Formulaire soumis avec succès !');
             } else {
-                session()->flash('error', __('An error occurred while submitting the form. Please try again.'));
+                session()->flash('error', __('Une erreur s\'est produite lors de la soumission du formulaire. Veuillez réessayer.'));
             }
         } catch (\Exception $e) {
-            session()->flash('error', __('Validation failed. Please check the form and try again.'));
+            report($e);
+            session()->flash('error', __('Quelque chose s\'est mal passé'));
         }
     }
 }; ?>
@@ -79,7 +86,23 @@ new class extends Component {
             </div>
         </div>
     @endif
-
+    @if (!$this->formSubmitted && !session('error'))
+        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-blue-700">
+                        {{ __('Veuillez remplir le formulaire pour cette propriété.') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
     @if ($formSubmitted)
         <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-4 shadow-md">
             <div class="flex">
@@ -130,10 +153,10 @@ new class extends Component {
                                     class="inline-flex items-center disabled:opacity-50 disabled:cursor-not-allowed
                                      px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                                     wire:loading.attr="disabled">
-                                    <span wire:loading.remove wire:target="submitForm">{{ __('Submit') }}</span>
+                                    <span wire:loading.remove wire:target="submitForm">{{ __('Soumettre') }}</span>
                                     <span wire:loading wire:target="submitForm"
                                         class="flex flex-row justify-center items-center gap-2">
-                                        {{ __('Submitting...') }}
+                                        {{ __('Soumission en cours...') }}
                                     </span>
                                 </button>
                             </div>
@@ -150,7 +173,7 @@ new class extends Component {
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm text-yellow-700">
-                                            {{ __('No form available for this property.') }}
+                                            {{ __('Aucun formulaire disponible pour cette propriété.') }}
                                         </p>
                                     </div>
                                 </div>

@@ -16,29 +16,12 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6">
-                    <div class="mb-6">
+                    <div class="">
                         <h1 class="text-2xl font-bold text-gray-800">{{ $property->title }}</h1>
-                    </div>
-
-                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
-                        <div class="flex">
-                            <div class="flex-shrink-0">
-                                <svg class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24"
-                                    stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                </svg>
-                            </div>
-                            <div class="ml-3">
-                                <p class="text-sm text-blue-700">
-                                    {{ __('Veuillez remplir le formulaire pour cette propriété.') }}
-                                </p>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Placeholder for the form content -->
