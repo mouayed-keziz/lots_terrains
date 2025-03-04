@@ -25,6 +25,12 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
     ];
 
+    // can access filament panel (email admin@admin.dev only)
+    public function canAccessFilament(): bool
+    {
+        return $this->email === 'admin@admin.dev';
+    }
+
     /**
      * The attributes that should be hidden for serialization.
      *
